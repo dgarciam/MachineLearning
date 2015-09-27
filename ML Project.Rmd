@@ -13,11 +13,14 @@ As a cleaning procedure, we'll remove innecesary columns that wont add accuracy 
 
 ```{r warning=FALSE, message=FALSE, error=FALSE}
 library(caret)
+library(dplyr)
 library(rpart)
 library(kernlab)
 library(reshape2)
 library(knitr)
 library(doParallel)
+library(ggplot2)
+library(ggthemes)
 
 set.seed(1234556) #Give it to me baby, aha, aha! 
 training = read.csv("pml-training.csv")
@@ -90,3 +93,22 @@ errRate = errRate * 100
 ```
 Our selected model has an out of sample error = `r round(errRate,3)` % 
 and by consequence an accuracy of `r round(100 - errRate,3)` %
+
+### Variable Importance - TOP 20
+```{r fig.width = 7, fig.height = 7, dpi = 144}
+
+#Get the variable importance from the model and melt the data frame for plotting
+importance.df = as.data.frame(importance(rF.model$finalModel))
+importance.df$variable = rownames(importance.df)
+  
+importance.df$variable = factor(importance.df$variable, levels = importance.df$variable[order(importance.df$MeanDecreaseAccuracy)])
+importance.df = arrange(importance.df,desc(MeanDecreaseAccuracy))
+importance.df = head(importance.df,n = 20)
+
+varImp = ggplot(importance.df, aes(y=variable, x=MeanDecreaseAccuracy)) + geom_point(size = 4) 
+varImp = varImp + ggtitle(expression(atop("Top 20 Variable Importance"))) + labs( x="Mean decrease in accuracy", y="Predictor")
+varImp = varImp + theme_bw()
+varImp
+```
+
+Our most important variable is yaw_belt
