@@ -5,7 +5,6 @@ output: html_document
 
 #Summary
 
-
 Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).
 
 ### Loading and Cleaning the Data
@@ -14,7 +13,6 @@ As a cleaning procedure, we'll remove innecesary columns that wont add accuracy 
 
 ```{r warning=FALSE, message=FALSE, error=FALSE}
 library(caret)
-library(dplyr)
 library(rpart)
 library(kernlab)
 library(reshape2)
@@ -48,17 +46,13 @@ For presentation purposes, the code in the chunk below wont be evaluated, but wi
 ```{r, eval=FALSE}
 cl <- makeCluster(4)
 registerDoParallel(cl)
-inicio = Sys.time()
 rF.model = train(classe ~ .,
                            data=training.set,
                            method="rf",
                            importance= TRUE,
                            trControl = trainControl(method = "repeatedcv", number = 5, repeats = 5)
                           )
-fin = Sys.time()
-tiempo = fin - inicio
 stopCluster(cl)
-
 saveRDS(rF.model, file = "randomForestSaved.rds")
 ```
 

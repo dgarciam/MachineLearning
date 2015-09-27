@@ -71,7 +71,6 @@ img {
 <h3>Loading and Cleaning the Data</h3>
 <p>As a cleaning procedure, we’ll remove innecesary columns that wont add accuracy to the model. Also, we will strip any column/variable where the number of NAs exceeds 50% of the data of that column</p>
 <pre class="r"><code>library(caret)
-library(dplyr)
 library(rpart)
 library(kernlab)
 library(reshape2)
@@ -99,17 +98,13 @@ testing.set = training[-inTrain,]</code></pre>
 <p>For presentation purposes, the code in the chunk below wont be evaluated, but will be loaded already computed.</p>
 <pre class="r"><code>cl &lt;- makeCluster(4)
 registerDoParallel(cl)
-inicio = Sys.time()
 rF.model = train(classe ~ .,
                            data=training.set,
                            method=&quot;rf&quot;,
                            importance= TRUE,
                            trControl = trainControl(method = &quot;repeatedcv&quot;, number = 5, repeats = 5)
                           )
-fin = Sys.time()
-tiempo = fin - inicio
 stopCluster(cl)
-
 saveRDS(rF.model, file = &quot;randomForestSaved.rds&quot;)</code></pre>
 </div>
 <div id="training-set" class="section level3">
