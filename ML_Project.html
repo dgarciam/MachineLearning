@@ -82,7 +82,7 @@ set.seed(1234556) #Give it to me baby, aha, aha!
 training = read.csv(&quot;pml-training.csv&quot;)
 testing = read.csv(&quot;pml-testing.csv&quot;)
 
-training = training[,!grepl(&quot;^X|window|timestamp|user_name&quot;, names(training))] #Removing Columns
+training = training[,!grepl(&quot;^X|new_window|timestamp|user_name&quot;, names(training))] #Removing Columns
 training = training[, colSums(is.na(training)) &lt; (nrow(training)/2)] #Remove Columns With NAs &gt; 50%</code></pre>
 </div>
 <div id="creating-partitions" class="section level3">
@@ -192,6 +192,15 @@ rF.test.cfMatrix$overall</code></pre>
 </tr>
 </tbody>
 </table>
+</div>
+<div id="out-of-sample-errors" class="section level3">
+<h3>Out of Sample Errors</h3>
+<pre class="r"><code>missClass = function(values, prediction) {
+    sum(prediction != values)/length(values)
+}
+errRate = missClass(testing.set$classe, rF.predict.test)
+errRate = errRate * 100</code></pre>
+<p>Our selected model has an out of sample error = 0.136 % and by consequence an accuracy of 99.864 %</p>
 </div>
 </div>
 

@@ -25,7 +25,7 @@ set.seed(1234556) #Give it to me baby, aha, aha!
 training = read.csv("pml-training.csv")
 testing = read.csv("pml-testing.csv")
 
-training = training[,!grepl("^X|window|timestamp|user_name", names(training))] #Removing Columns
+training = training[,!grepl("^X|new_window|timestamp|user_name", names(training))] #Removing Columns
 training = training[, colSums(is.na(training)) < (nrow(training)/2)] #Remove Columns With NAs > 50%
 ```
 
@@ -85,3 +85,14 @@ rF.test.cfMatrix$overall
 ```{r}
 kable(rF.test.cfMatrix$table)
 ```
+
+### Out of Sample Errors
+```{r}
+missClass = function(values, prediction) {
+    sum(prediction != values)/length(values)
+}
+errRate = missClass(testing.set$classe, rF.predict.test)
+errRate = errRate * 100
+```
+Our selected model has an out of sample error = `r round(errRate,3)` % 
+and by consequence an accuracy of `r round(100 - errRate,3)` %
