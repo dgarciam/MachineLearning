@@ -30,7 +30,7 @@ fin = Sys.time()
 tiempo = fin - inicio
 stopCluster(cl)
 
-#randomForest.model = readRDS("randomForest-final-model.rds")
+#randomForest.model = readRDS("randomForestSaved.rds")
 #randomForest.predict.train <- predict(randomForest.model, newdata = training.set)
 #randomForest.train.confusionMatrix = confusionMatrix(data=randomForest.predict.train,  training.set$classe)
 #randomForest.train.confusionMatrix$overall

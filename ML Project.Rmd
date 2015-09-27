@@ -1,0 +1,87 @@
+---
+title: "Movement Analisys - Machine Learning Project"
+output: html_document
+---
+
+#Summary
+
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).
+
+### Loading and Cleaning the Data
+
+As a cleaning procedure, we'll remove innecesary columns that wont add accuracy to the model. Also, we will strip any column/variable where the number of NAs exceeds 50% of the data of that column
+
+```{r warning=FALSE, message=FALSE, error=FALSE}
+library(caret)
+library(dplyr)
+library(rpart)
+library(kernlab)
+library(reshape2)
+library(knitr)
+library(doParallel)
+
+set.seed(1234556) #Give it to me baby, aha, aha! 
+training = read.csv("pml-training.csv")
+testing = read.csv("pml-testing.csv")
+
+training = training[,!grepl("^X|window|timestamp|user_name", names(training))] #Removing Columns
+training = training[, colSums(is.na(training)) < (nrow(training)/2)] #Remove Columns With NAs > 50%
+```
+
+### Creating Partitions
+We proceed to create our training and testing datasets from the cleaned data above, using 70% of the data as test data. 
+
+```{r}
+inTrain = createDataPartition(y=training$classe, p=0.70, list=FALSE)
+training.set = training[inTrain,]
+testing.set = training[-inTrain,]
+```
+
+### Creating Parallelism and Fitting our model
+Since the computing of the models are lenghty proccesses, we choose to use more than one processor. 
+
+To fit the predictive model, we are using Random Forest. This algorithm is characterized by a subset of features, selected in a random and independent manner with the same distribution for each of the trees in the forest. We'll be using repeated cross validation, with a k-fold of 5, repeated 5 times. 
+
+For presentation purposes, the code in the chunk below wont be evaluated, but will be loaded already computed.
+
+```{r, eval=FALSE}
+cl <- makeCluster(4)
+registerDoParallel(cl)
+inicio = Sys.time()
+rF.model = train(classe ~ .,
+                           data=training.set,
+                           method="rf",
+                           importance= TRUE,
+                           trControl = trainControl(method = "repeatedcv", number = 5, repeats = 5)
+                          )
+fin = Sys.time()
+tiempo = fin - inicio
+stopCluster(cl)
+
+saveRDS(rF.model, file = "randomForestSaved.rds")
+```
+
+### Training Set
+We'll predict with the training set in order to evaluate the model's accuracy as well as the in sample errors, and we see accuracy of between 99.7% and 99.8% on the training set. 
+
+```{r message=FALSE}
+rF.model = readRDS("randomForestSaved.rds")
+rF.predict.train = predict(rF.model, newdata = training.set)
+rF.train.cfMatrix = confusionMatrix(data=rF.predict.train,  training.set$classe)
+rF.train.cfMatrix$overall
+```
+
+### Testing Set
+Next, we procced to apply our model to the testing set to evaluate our predictions
+
+```{r message=FALSE}
+rF.predict.test = predict(rF.model, newdata = testing.set)
+rF.test.cfMatrix = confusionMatrix(data=rF.predict.test,  testing.set$classe)
+rF.test.cfMatrix$overall
+```
+
+### Test Set - Confusion Matrix
+```{r}
+kable(rF.test.cfMatrix$table)
+```
