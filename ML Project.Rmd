@@ -23,8 +23,9 @@ library(ggplot2)
 library(ggthemes)
 
 set.seed(1234556) #Give it to me baby, aha, aha! 
-training = read.csv("pml-training.csv")
-testing = read.csv("pml-testing.csv")
+strings.na <- c("NA","#DIV/0!","")
+training = read.csv("pml-training.csv", na.strings = strings.na)
+testing = read.csv("pml-testing.csv", na.strings = strings.na)
 
 training = training[,!grepl("^X|new_window|timestamp|user_name", names(training))] #Removing Columns
 training = training[, colSums(is.na(training)) < (nrow(training)/2)] #Remove Columns With NAs > 50%
@@ -56,14 +57,14 @@ rF.model = train(classe ~ .,
                            trControl = trainControl(method = "repeatedcv", number = 5, repeats = 5)
                           )
 stopCluster(cl)
-saveRDS(rF.model, file = "randomForestSaved.rds")
+saveRDS(rF.model, file = "rFModel.rds")
 ```
 
 ### Training Set
 We'll predict with the training set in order to evaluate the model's accuracy as well as the in sample errors, and we see accuracy of between 99.7% and 99.8% on the training set. 
 
 ```{r message=FALSE}
-rF.model = readRDS("randomForestSaved.rds")
+rF.model = readRDS("rFModel.rds")
 rF.predict.train = predict(rF.model, newdata = training.set)
 rF.train.cfMatrix = confusionMatrix(data=rF.predict.train,  training.set$classe)
 rF.train.cfMatrix$overall
@@ -111,4 +112,4 @@ varImp = varImp + theme_bw()
 varImp
 ```
 
-Our most important variable is yaw_belt
+Our most important variable is roll_belt
